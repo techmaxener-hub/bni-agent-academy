@@ -21,13 +21,14 @@ def get_bni_live_text(query):
     except Exception as e:
         return f"Live lookup unavailable: {str(e)}"
 
+# In agent.py
 def ask_agent(user_input):
     try:
-        # We use 'gemini-1.5-flash' - do not add any extra text or slashes
-        chat = client.chats.create(model="gemini-1.5-flash")
+        # Use ONLY the name 'gemini-1.5-flash'
+        chat = client.chats.create(model="gemini-1.5-flash") 
         
         response = chat.send_message(user_input)
         return response.text
     except Exception as e:
-        # This will tell us if the error is Name (404) or Quota (429)
         return f"❌ Agent Error: {str(e)}"
+
