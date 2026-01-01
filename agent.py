@@ -22,21 +22,12 @@ def get_bni_live_text(query):
         return f"Live lookup unavailable: {str(e)}"
 
 def ask_agent(user_input):
-    # Detect if user is asking for specific data
-    if any(word in user_input.lower() for word in ["find", "chapter", "location", "near", "mumbai", "dubai"]):
-        print(f"🌐 Crawling BNI.com for: {user_input}")
-        live_data = get_bni_live_text(user_input)
-        prompt = f"BNI SYSTEM CONTEXT:\n{live_data}\n\nUSER QUESTION: {user_input}"
-    else:
-        # Default BNI knowledge
-        prompt = f"You are a BNI Expert. Answer this: {user_input}"
-
     try:
-        chat = client.chats.create(
-    model="gemini-1.5-flash",  # Use 1.5-flash for the most stable free quota
-    config={"system_instruction": "You are the Official BNI Inquiry Counter..."}
-)
-        response = chat.send_message(prompt)
+        # We use 'gemini-1.5-flash' - do not add any extra text or slashes
+        chat = client.chats.create(model="gemini-1.5-flash")
+        
+        response = chat.send_message(user_input)
         return response.text
     except Exception as e:
+        # This will tell us if the error is Name (404) or Quota (429)
         return f"❌ Agent Error: {str(e)}"
