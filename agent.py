@@ -2,33 +2,26 @@ import httpx
 from bs4 import BeautifulSoup
 from google import genai
 
-# Use your working API Key
+# Your API Key
 MY_API_KEY = "AIzaSyBqKxZBpIZu3HBbC8SeJ9GaLDLfY05rClg" 
 
 client = genai.Client(api_key=MY_API_KEY)
 
-def get_bni_live_text(query):
-    """Lightweight web scraper that works on Python 3.14"""
-    try:
-        url = f"https://www.bni.com/search?q={query}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = httpx.get(url, headers=headers, follow_redirects=True, timeout=10.0)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        # Remove junk
-        for script in soup(["script", "style"]):
-            script.decompose()
-        return soup.get_text()[:4000] 
-    except Exception as e:
-        return f"Live lookup unavailable: {str(e)}"
-
-# In agent.py
 def ask_agent(user_input):
-    try:
-        # Use ONLY the name 'gemini-1.5-flash'
-        chat = client.chats.create(model="gemini-1.5-flash") 
-        
-        response = chat.send_message(user_input)
-        return response.text
-    except Exception as e:
-        return f"❌ Agent Error: {str(e)}"
+    # List of possible model addresses to prevent 404
+    models_to_try = ["gemini-1.5-flash", "gemini-2.0-flash-exp"]
+    
+    last_error = ""
+    for model_name in models_to_try:
+        try:
+            # We use a simple chat creation
+            chat = client.chats.create(model=model_name)
+            response = chat.send_message(user_input)
+            return response.text
+        except Exception as e:
+            last_error = str(e)
+            continue # Try the next name if this one 404s
+            
+    return f"❌ Agent Error (Tried all models): {last_error}"
 
+# Keep your get_bni_live_text function below...
